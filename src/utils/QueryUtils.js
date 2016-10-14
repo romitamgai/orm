@@ -16,7 +16,7 @@ class QueryUtils {
     }
 
     static parseNoOptionQuery(jsonString) {
-        return QueryUtils.hasStartOrOffset(jsonString) ? `${jsonString.field} ${jsonString.value}` : `where ${jsonString.field} = '${jsonString.value}' `;
+        return QueryUtils.hasStartOrOffset(jsonString) ? `${jsonString.field} ${jsonString.value} ` : `where ${jsonString.field} = '${jsonString.value}' `;
     }
 
     static hasStartOrOffset(jsonString) {
@@ -32,23 +32,17 @@ class QueryUtils {
     }
 
     static buildGetQuery(tableName, options) {
-        // let whereQuery = '';
-        // let sortQuery = '';
-        // let paginationQuery = '';
-        // let whereCount = 0;
-        // let builtqueryOptions;
-        // for(let option of options) {
-        //     if (option.indexOf('where') == 0) {
-        //         whereCount++;
-        //     }
-        //     if (whereCount > 1) {
-        //         option = option.replace('where', 'and');
-        //     }
-        //     console.log(option);
-        // }
-        // console.log(options);
-
-        return `SELECT * from ${tableName} ${options}`;
+        let mappedOptions = options.map((elem, whereCount = 0)=> {
+            if (elem.indexOf('where') == 0) {
+                whereCount++;
+            }
+            if (whereCount > 1) {
+                elem = elem.replace('where', 'and');
+            }
+            return elem;
+        });
+        let queryOptions = mappedOptions.join("");
+        return `SELECT * from ${tableName} ${queryOptions}`;
     }
 }
 

@@ -29,10 +29,10 @@ class EmployeeController {
         }
         const tableName = 'employee';
         let query = queryUtils.buildGetQuery(tableName, options);
-        res.json(options);
-        // this.databaseUtils.executeQuery(query).then((response)=> {
-        //     res.json(options);
-        // });
+        console.log(query);
+        this.databaseUtils.executeQuery(query).then((response)=> {
+            res.json(response);
+        });
     }
 
 

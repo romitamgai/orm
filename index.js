@@ -1,5 +1,6 @@
 import express from 'express';
 import EmployeeRoutes from './src/routes/EmployeeRoutes';
+import StudentRoutes from './src/routes/StudentRoute';
 import DBUtils from './src/utils/DBUtils';
 
 const connectionString = {host: 'localhost', user: 'romit', database: 'querybuilderdb', password: ''};
@@ -13,7 +14,10 @@ app.get("/", function (req, res) {
 });
 
 const employeeRoutes = new EmployeeRoutes(dbUtils);
-app.use('/employees', employeeRoutes.setupRoutes());
+app.use('/employee', employeeRoutes.setupRoutes());
+
+const studentRoutes = new StudentRoutes(dbUtils);
+app.use('/student', studentRoutes.setupRoutes());
 
 app.listen(port, function () {
     console.log('App started running in port: ' + port);

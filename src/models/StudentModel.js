@@ -1,12 +1,12 @@
 /**
- * Created by romit on 10/14/16.
+ * Created by romit on 10/17/16.
  */
 
-const employeeModel = {
+const studentModel = {
     id: 'id',
     name: 'name',
-    designation: 'designation',
-    salary: 'salary',
+    class: 'class',
+    section: 'section',
     start: 'start',
     offset: 'offset',
     options: {
@@ -18,5 +18,4 @@ const employeeModel = {
     },
 };
 
-export default employeeModel;
-
+export default studentModel;

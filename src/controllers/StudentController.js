@@ -1,11 +1,10 @@
 /**
- * Created by romit on 10/13/16.
+ * Created by romit on 10/17/16.
  */
-
 import QueryService from '../services/QueryService';
-import employeeModel from '../models/EmployeeModel';
+import studentModel from '../models/StudentModel';
 
-class EmployeeController {
+class StudentController {
     constructor(dbUtils) {
         this.databaseUtils = dbUtils;
         this.getAll = this.getAll.bind(this);
@@ -15,9 +14,7 @@ class EmployeeController {
     getAll(req, res) {
         const tableName = req.originalUrl.split('?').shift().replace('/', '');
         const queryParams = req.query;
-        let queryObject = this.queryService.getQueryObject(tableName, queryParams, employeeModel);
-        queryObject.query.orWhere('id', '<', 2).toSQL();
-        console.log(queryObject.query.toString());
+        let queryObject = this.queryService.getQueryObject(tableName, queryParams, studentModel);
         if (!queryObject.hasError) {
             this.databaseUtils.executeQuery(queryObject.query.toString())
                 .then(response=> {
@@ -34,4 +31,4 @@ class EmployeeController {
 
 }
 
-export default EmployeeController;
+export default StudentController;

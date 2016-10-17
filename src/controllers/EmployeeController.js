@@ -16,8 +16,6 @@ class EmployeeController {
         const tableName = req.originalUrl.split('?').shift().replace('/', '');
         const queryParams = req.query;
         let queryObject = this.queryService.getQueryObject(tableName, queryParams, employeeModel);
-        queryObject.query.orWhere('id', '<', 2).toSQL();
-        console.log(queryObject.query.toString());
         if (!queryObject.hasError) {
             this.databaseUtils.executeQuery(queryObject.query.toString())
                 .then(response=> {

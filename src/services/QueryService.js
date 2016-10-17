@@ -37,42 +37,33 @@ class QueryService {
                 }
             } catch (err) {
                 qObject.hasError = true;
-                err.message ? qObject.error.push(err.message) :
-                    qObject.error.push({message: 'Invalid parameters in field ' + jsonString.field});
+                err.customMessage ? qObject.error.push(err.customMessage) :
+                    qObject.error.push('The operator ' + jsonString.option + ' is not permitted');
             }
         }
         return qObject;
     }
 
     parseOptionQuery(jsonString, query) {
-        try {
-            if (jsonString.field == 'sort' && this.isValidField(jsonString.value)) {
-                query.orderBy(jsonString.value, jsonString.option).toSQL();
-            }
-            else if (wordMap.hasOwnProperty(jsonString.option)) {
-                jsonString.option = wordMap[jsonString.option];
-                query.where(jsonString.field, jsonString.option, jsonString.value).toSQL();
-            } else {
-                query.where(jsonString.field, jsonString.option, jsonString.value).toSQL();
-            }
-        } catch (err) {
-            throw err;
+        if (jsonString.field == 'sort' && this.isValidField(jsonString.value)) {
+            query.orderBy(jsonString.value, jsonString.option).toSQL();
+        }
+        else if (wordMap.hasOwnProperty(jsonString.option)) {
+            jsonString.option = wordMap[jsonString.option];
+            query.where(jsonString.field, jsonString.option, jsonString.value).toSQL();
+        } else {
+            query.where(jsonString.field, jsonString.option, jsonString.value).toSQL();
         }
         return query;
-
     }
 
     parseNoOptionQuery(jsonString, query) {
-        try {
-            if (jsonString.field == 'start') {
-                query.offset(parseInt(jsonString.value)).toSQL();
-            } else if (jsonString.field == 'offset') {
-                query.limit(parseInt(jsonString.value)).toSQL();
-            } else {
-                query.where(jsonString.field, jsonString.value).toSQL();
-            }
-        } catch (err) {
-            throw err;
+        if (jsonString.field == 'start') {
+            query.offset(parseInt(jsonString.value)).toSQL();
+        } else if (jsonString.field == 'offset') {
+            query.limit(parseInt(jsonString.value)).toSQL();
+        } else {
+            query.where(jsonString.field, jsonString.value).toSQL();
         }
         return query;
     }
@@ -84,15 +75,14 @@ class QueryService {
         else if (this.isValidField(jsonString.field)) {
             return true;
         }
-        throw {message: 'Invalid field ' + jsonString.field};
-
+        throw {customMessage: 'Invalid field ' + jsonString.field};
     }
 
     isValidField(field) {
         if (this.model.hasOwnProperty(field) && field != 'options') {
             return true;
         }
-        throw {message: 'Invalid field ' + field};
+        throw {customMessage: 'Invalid field ' + field};
     }
 
     hasValidOption(option) {
@@ -100,7 +90,7 @@ class QueryService {
             return true;
         else if (option !== undefined && this.model.options.filter.hasOwnProperty(option))
             return true;
-        throw {message: 'Provide valid option for sort/filter'};
+        throw {customMessage: 'Provide valid option for sort/filter'};
     }
 
 }

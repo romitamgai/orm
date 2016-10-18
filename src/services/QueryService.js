@@ -3,6 +3,7 @@
  */
 import Knex from 'knex';
 import wordMap from '../utils/wordMap';
+import customJoi from '../utils/customValidation';
 
 class QueryService {
     constructor() {
@@ -11,7 +12,7 @@ class QueryService {
         this.getQueryObject = this.getQueryObject.bind(this);
         this.parseOptionQuery = this.parseOptionQuery.bind(this);
         this.parseNoOptionQuery = this.parseNoOptionQuery.bind(this);
-        this.validateField = this.validateField.bind(this);
+        this.validate = this.validate.bind(this);
         this.isValidField = this.isValidField.bind(this);
         this.hasValidOption = this.hasValidOption.bind(this);
     }
@@ -28,11 +29,11 @@ class QueryService {
                 if (typeof queryParams[field] === 'object') {
                     const option = Object.keys(queryParams[field]).pop();
                     jsonString = {field: field, option: option, value: queryParams[field][option]};
-                    if (this.validateField(jsonString))
+                    if (this.validate(jsonString))
                         qObject.query = this.parseOptionQuery(jsonString, qObject.query);
                 } else {
                     jsonString = {field: field, value: queryParams[field]};
-                    if (this.validateField(jsonString))
+                    if (this.validate(jsonString))
                         qObject.query = this.parseNoOptionQuery(jsonString, qObject.query);
                 }
             } catch (err) {
@@ -68,14 +69,26 @@ class QueryService {
         return query;
     }
 
-    validateField(jsonString) {
+    validate(jsonString) {
         if (this.model.options.hasOwnProperty(jsonString.field)) {
             return this.hasValidOption(jsonString.option);
         }
         else if (this.isValidField(jsonString.field)) {
+            customJoi.validate({[jsonString.field]: jsonString.value}, this.model, function (err, value) {
+                if (err)
+                    throw {customMessage: err.details[0].message};
+            });
             return true;
         }
         throw {customMessage: 'Invalid field ' + jsonString.field};
+    }
+
+    static validateModel(values, model) {
+        customJoi.validate(values, model, function (err, value) {
+            if (err) {
+                throw {errors: err.details}
+            }
+        });
     }
 
     isValidField(field) {

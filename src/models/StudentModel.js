@@ -1,18 +1,20 @@
 /**
  * Created by romit on 10/17/16.
  */
+import Joi from 'joi';
 
 const studentModel = {
-    id: 'id',
-    name: 'name',
-    class: 'class',
-    section: 'section',
-    start: 'start',
-    offset: 'offset',
+    id: Joi.number(),
+    name: Joi.string(),
+    class: Joi.string(),
+    section: Joi.string(),
+    start: Joi.number().integer(),
+    offset: Joi.number().integer(),
+    email: Joi.string().email(),
     options: {
         sort: {
-            asc: 'asc',
-            desc: 'desc'
+            asc: Joi.string(),
+            desc: Joi.string()
         },
         filter: {}
     },

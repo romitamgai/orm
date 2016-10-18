@@ -13,26 +13,22 @@ const customJoi = Joi.extend({
     pre(value, state, options) {
 
         if (options.convert && this._flags.round) {
-            return Math.round(value); // Change the value
+            return Math.round(value);
         }
-
-        return value; // Keep the value as it was
+        return value;
     },
     rules: [
         {
             name: 'round',
             setup(params) {
-
-                this._flags.round = true; // Set a flag for later use
+                this._flags.round = true;
             },
             validate(params, value, state, options) {
 
                 if (value % 1 !== 0) {
-                    // Generate an error, state and options need to be passed
                     return this.createError('number.round', {v: value}, state, options);
                 }
-
-                return value; // Everything is OK
+                return value;
             }
         },
         {
@@ -42,11 +38,9 @@ const customJoi = Joi.extend({
             },
             validate(params, value, state, options) {
                 if (value % params.q !== 0) {
-                    // Generate an error, state and options need to be passed, q is used in the language
                     return this.createError('number.dividable', {v: value, q: params.q}, state, options);
                 }
-
-                return value; // Everything is OK
+                return value;
             }
         }
     ]

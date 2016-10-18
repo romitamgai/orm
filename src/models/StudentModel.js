@@ -1,7 +1,7 @@
 /**
  * Created by romit on 10/17/16.
  */
-import Joi from 'joi';
+import Joi from '../utils/customValidation';
 
 const studentModel = {
     id: Joi.number(),

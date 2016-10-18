@@ -12,8 +12,8 @@ const employeeModel = {
     offset: Joi.number().integer(),
     options: {
         sort: {
-            asc: 'asc',
-            desc: 'desc'
+            asc: Joi().string(),
+            desc: Joi().string()
         },
         filter: {}
     }

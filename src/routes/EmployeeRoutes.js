@@ -13,7 +13,8 @@ class EmployeeRoutes {
 
     setupRoutes() {
         this.employeeRouter.route("/")
-            .get(this.employeeController.getAll);
+            .get(this.employeeController.getAll)
+            .post(this.employeeController.saveEmployeeInfo);
 
         return this.employeeRouter;
     }

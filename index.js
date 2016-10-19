@@ -1,4 +1,6 @@
 import express from 'express';
+import bodyParser from 'body-parser';
+
 import EmployeeRoutes from './src/routes/EmployeeRoutes';
 import StudentRoutes from './src/routes/StudentRoute';
 import DBUtils from './src/utils/DBUtils';
@@ -8,6 +10,9 @@ const connectionString = {host: 'localhost', user: 'romit', database: 'querybuil
 const dbUtils = new DBUtils(connectionString);
 const app = express();
 const port = process.env.PORT || 3000;
+
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
 
 app.get("/", function (req, res) {
     res.send('welcome to my QueryBuilderApi');

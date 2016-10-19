@@ -10,6 +10,7 @@ class QueryService {
         this.knex = new Knex({client: 'mysql'});
         this.model = {};
         this.getQueryObject = this.getQueryObject.bind(this);
+        this.parseQueryParam = this.parseQueryParam.bind(this);
         this.parseOptionQuery = this.parseOptionQuery.bind(this);
         this.parseNoOptionQuery = this.parseNoOptionQuery.bind(this);
         this.validate = this.validate.bind(this);
@@ -18,31 +19,42 @@ class QueryService {
     }
 
     getQueryObject(tableName, queryParams, model) {
-        let qObject = {};
-        qObject.query = this.knex(tableName);
-        qObject.hasError = false;
-        qObject.error = [];
+        let queryObject = {};
+        queryObject.query = this.knex(tableName);
+        queryObject.hasError = false;
+        queryObject.error = [];
         this.model = model;
-        for (let field of Object.keys(queryParams)) {
-            let jsonString = {};
+        let newQueryParams = {
+            name: [{exp: 'like', value: 'a%'}],
+            salary: [{exp: 'gt', value: '100'}, {exp: 'lt', value: '1000'}],
+            sort: [{exp: 'asc', value: 'name'}]
+        };
+        for (let field of Object.keys(newQueryParams)) {
+            queryObject = this.parseQueryParam(field, newQueryParams, queryObject);
+        }
+        return queryObject;
+    }
+
+    parseQueryParam(field, newQueryParams, queryObject) {
+        let jsonString;
+        for (let optionAndValue of newQueryParams[field]) {
             try {
-                if (typeof queryParams[field] === 'object') {
-                    const option = Object.keys(queryParams[field]).pop();
-                    jsonString = {field: field, option: option, value: queryParams[field][option]};
+                if (optionAndValue.exp != '') {
+                    jsonString = {field: field, option: optionAndValue.exp, value: optionAndValue.value};
                     if (this.validate(jsonString))
-                        qObject.query = this.parseOptionQuery(jsonString, qObject.query);
+                        queryObject.query = this.parseOptionQuery(jsonString, queryObject.query);
                 } else {
-                    jsonString = {field: field, value: queryParams[field]};
+                    jsonString = {field: field, value: optionAndValue.value};
                     if (this.validate(jsonString))
-                        qObject.query = this.parseNoOptionQuery(jsonString, qObject.query);
+                        queryObject.query = this.parseNoOptionQuery(jsonString, queryObject.query);
                 }
             } catch (err) {
-                qObject.hasError = true;
-                err.customMessage ? qObject.error.push(err.customMessage) :
-                    qObject.error.push('The operator ' + jsonString.option + ' is not permitted');
+                queryObject.hasError = true;
+                err.customMessage ? queryObject.error.push(err.customMessage) :
+                    queryObject.error.push(err.message);
             }
         }
-        return qObject;
+        return queryObject;
     }
 
     parseOptionQuery(jsonString, query) {

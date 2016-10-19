@@ -30,34 +30,35 @@ class QueryService {
             let parsedOptionAndValue, jsonString;
             const arrayConstructor = [].constructor;
             parsedOptionAndValue = this.parseOptionAndValue(queryParams[field]);
-            try {
-                if (parsedOptionAndValue.constructor === arrayConstructor) {
-                    parsedOptionAndValue.map((res)=> {
-                        res.field = field;
-                        jsonString = res;
-                        queryObject = this.parseQueryParam(jsonString, queryObject);
-                    });
-                }
-                else {
-                    parsedOptionAndValue.field = field;
-                    jsonString = parsedOptionAndValue;
+
+            if (parsedOptionAndValue.constructor === arrayConstructor) {
+                parsedOptionAndValue.map((res)=> {
+                    res.field = field;
+                    jsonString = res;
                     queryObject = this.parseQueryParam(jsonString, queryObject);
-                }
-            } catch (err) {
-                queryObject.hasError = true;
-                err.customMessage ? queryObject.error.push(err.customMessage) :
-                    queryObject.error.push(err.message);
+                });
             }
+            else {
+                parsedOptionAndValue.field = field;
+                jsonString = parsedOptionAndValue;
+                queryObject = this.parseQueryParam(jsonString, queryObject);
+            }
+
         }
         return queryObject;
     }
 
     parseQueryParam(jsonString, queryObject) {
-        if (this.validate(jsonString)) {
-            if (jsonString.option != '')
-                queryObject.query = this.parseOptionQuery(jsonString, queryObject.query);
-            else
-                queryObject.query = this.parseNoOptionQuery(jsonString, queryObject.query);
+        try {
+            if (this.validate(jsonString)) {
+                queryObject.query = (jsonString.option != '') ?
+                    this.parseOptionQuery(jsonString, queryObject.query) :
+                    queryObject.query = this.parseNoOptionQuery(jsonString, queryObject.query);
+            }
+        } catch (err) {
+            queryObject.hasError = true;
+            err.customMessage ? queryObject.error.push(err.customMessage) :
+                queryObject.error.push(err.message);
         }
         return queryObject;
     }

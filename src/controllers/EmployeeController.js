@@ -17,10 +17,11 @@ class EmployeeController {
         const tableName = req.originalUrl.split('?').shift().replace('/', '') || 'employee';
         const queryParams = req.query;
         let queryObject = this.queryService.getQueryObject(tableName, queryParams, employeeModel);
+        console.log(queryObject.query.toString());
         if (!queryObject.hasError) {
             this.databaseUtils.executeQuery(queryObject.query.toString())
-                .then(res=> {
-                    res.json(res);
+                .then(response=> {
+                    res.json(response);
                 })
                 .catch(err=> {
                     res.json(err);

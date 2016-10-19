@@ -17,6 +17,7 @@ class QueryService {
         this.validate = this.validate.bind(this);
         this.isValidField = this.isValidField.bind(this);
         this.hasValidOption = this.hasValidOption.bind(this);
+        this.parseOptionAndValue = this.parseOptionAndValue.bind(this);
     }
 
     getQueryObject(tableName, queryParams, model) {
@@ -25,35 +26,38 @@ class QueryService {
         queryObject.hasError = false;
         queryObject.error = [];
         this.model = model;
-        let newQueryParams = {
-            name: [{exp: 'like', value: 'a%'}],
-            salary: [{exp: 'gt', value: '100'}, {exp: 'lt', value: '1000'}],
-            sort: [{exp: 'asc', value: 'name'}]
-        };
-        for (let field of Object.keys(newQueryParams)) {
-            queryObject = this.parseQueryParam(field, newQueryParams, queryObject);
-        }
-        return queryObject;
-    }
-
-    parseQueryParam(field, newQueryParams, queryObject) {
-        let jsonString;
-        for (let optionAndValue of newQueryParams[field]) {
+        for (let field of Object.keys(queryParams)) {
+            let parsedOptionAndValue, jsonString;
+            const arrayConstructor = [].constructor;
+            parsedOptionAndValue = this.parseOptionAndValue(queryParams[field]);
             try {
-                if (optionAndValue.exp != '') {
-                    jsonString = {field: field, option: optionAndValue.exp, value: optionAndValue.value};
-                    if (this.validate(jsonString))
-                        queryObject.query = this.parseOptionQuery(jsonString, queryObject.query);
-                } else {
-                    jsonString = {field: field, value: optionAndValue.value};
-                    if (this.validate(jsonString))
-                        queryObject.query = this.parseNoOptionQuery(jsonString, queryObject.query);
+                if (parsedOptionAndValue.constructor === arrayConstructor) {
+                    parsedOptionAndValue.map((res)=> {
+                        res.field = field;
+                        jsonString = res;
+                        queryObject = this.parseQueryParam(jsonString, queryObject);
+                    });
+                }
+                else {
+                    parsedOptionAndValue.field = field;
+                    jsonString = parsedOptionAndValue;
+                    queryObject = this.parseQueryParam(jsonString, queryObject);
                 }
             } catch (err) {
                 queryObject.hasError = true;
                 err.customMessage ? queryObject.error.push(err.customMessage) :
                     queryObject.error.push(err.message);
             }
+        }
+        return queryObject;
+    }
+
+    parseQueryParam(jsonString, queryObject) {
+        if (this.validate(jsonString)) {
+            if (jsonString.option != '')
+                queryObject.query = this.parseOptionQuery(jsonString, queryObject.query);
+            else
+                queryObject.query = this.parseNoOptionQuery(jsonString, queryObject.query);
         }
         return queryObject;
     }
@@ -127,6 +131,41 @@ class QueryService {
         else if (option !== undefined && this.model.options.filter.hasOwnProperty(option))
             return true;
         throw {customMessage: 'Provide valid option for sort/filter'};
+    }
+
+    parseOptionAndValue(obj) {
+        const stringConstructor = "string".constructor;
+        const objectConstructor = {}.constructor;
+        const arrayConstructor = [].constructor;
+        const booleanConstructor = true.constructor;
+        if (obj == null) {
+            return obj;
+        } else {
+            switch (obj.constructor) {
+                case stringConstructor:
+                    return {option: '', value: obj};
+                case arrayConstructor:
+                    return obj.map(this.parseOptionAndValue).reduce((a, b)=> {
+                        return a.concat(b);
+                    }, []);
+                case objectConstructor:
+                    let arrayList = [];
+                    for (let key of Object.keys(obj)) {
+                        if (obj[key].constructor == stringConstructor) {
+                            arrayList.push({option: isNaN(key) ? key : '', value: obj[key]});
+                        } else if (obj[key].constructor == booleanConstructor) {
+                            arrayList.push({option: '', value: key});
+                        } else {
+                            obj[key].map((jsonString)=> {
+                                let someObj = this.parseOptionAndValue(jsonString);
+                                someObj.option = key;
+                                arrayList.push(someObj);
+                            });
+                        }
+                    }
+                    return arrayList;
+            }
+        }
     }
 
 }

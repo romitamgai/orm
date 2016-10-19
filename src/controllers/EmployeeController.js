@@ -19,11 +19,11 @@ class EmployeeController {
         let queryObject = this.queryService.getQueryObject(tableName, queryParams, employeeModel);
         if (!queryObject.hasError) {
             this.databaseUtils.executeQuery(queryObject.query.toString())
-                .then(response=> {
-                    res.json(response);
+                .then(res=> {
+                    res.json(res);
                 })
-                .catch(error=> {
-                    res.json(error);
+                .catch(err=> {
+                    res.json(err);
                 });
         } else {
             res.json(queryObject.error);
@@ -32,14 +32,24 @@ class EmployeeController {
 
     saveEmployeeInfo(req, res) {
         const tableName = 'employee';
-        let employee = req.body;
+        let employee = {};
+        employee = req.body;
         try {
             QueryService.validateModel(employee, employeeModel);
+            let postQuery = this.queryService.buildInsertQuery(employee, tableName);
+            this.databaseUtils.executeQuery(postQuery.toString())
+                .then(response=> {
+                    employee.message = 'Employee Successfully added to Database';
+                    res.status(201).json({employee});
+                })
+                .catch(err=> {
+                    employee.message = 'Error while adding employee to Database';
+                    employee.error = err;
+                    res.status(500).json(employee);
+                });
         } catch (err) {
             res.json(err);
         }
-        res.json(employee);
-
     }
 
 

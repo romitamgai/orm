@@ -4,6 +4,7 @@
 import Knex from 'knex';
 import wordMap from '../utils/wordMap';
 import customJoi from '../utils/customValidation';
+import _ from 'lodash';
 
 class QueryService {
     constructor() {
@@ -81,6 +82,16 @@ class QueryService {
         return query;
     }
 
+    buildInsertQuery(model, tableName) {
+        Object.keys(model).map(key=> {
+            if (_.snakeCase(key) != key) {
+                model[_.snakeCase(key)] = model[key];
+                delete model[key];
+            }
+        });
+        return this.knex.insert(model).into(tableName);
+    }
+
     validate(jsonString) {
         if (this.model.options.hasOwnProperty(jsonString.field)) {
             return this.hasValidOption(jsonString.option);
@@ -98,7 +109,7 @@ class QueryService {
     static validateModel(values, model) {
         customJoi.validate(values, model, function (err, value) {
             if (err) {
-                throw {errors: err.details}
+                throw {errors: err.details[0].message}
             }
         });
     }

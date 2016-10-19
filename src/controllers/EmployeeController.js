@@ -20,10 +20,10 @@ class EmployeeController {
         if (!queryObject.hasError) {
             this.databaseUtils.executeQuery(queryObject.query.toString())
                 .then(response=> {
-                    res.json(response);
+                    res.status(200).json(response);
                 })
                 .catch(err=> {
-                    res.json(err);
+                    res.status(500).json(err);
                 });
         } else {
             res.json(queryObject.error);
@@ -31,7 +31,7 @@ class EmployeeController {
     }
 
     saveEmployeeInfo(req, res) {
-        const tableName = 'employee';
+        const tableName = req.originalUrl.split('?').shift().replace('/', '') || 'employee';
         let employee = {};
         employee = req.body;
         try {

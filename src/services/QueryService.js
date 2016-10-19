@@ -27,33 +27,33 @@ class QueryService {
         queryObject.error = [];
         this.model = model;
         for (let field of Object.keys(queryParams)) {
-            let parsedOptionAndValue, jsonString;
+            let parsedOptionAndValue, optionAndValue = {};
             const arrayConstructor = [].constructor;
             parsedOptionAndValue = this.parseOptionAndValue(queryParams[field]);
 
             if (parsedOptionAndValue.constructor === arrayConstructor) {
                 parsedOptionAndValue.map((res)=> {
                     res.field = field;
-                    jsonString = res;
-                    queryObject = this.parseQueryParam(jsonString, queryObject);
+                    optionAndValue = res;
+                    queryObject = this.parseQueryParam(optionAndValue, queryObject);
                 });
             }
             else {
                 parsedOptionAndValue.field = field;
-                jsonString = parsedOptionAndValue;
-                queryObject = this.parseQueryParam(jsonString, queryObject);
+                optionAndValue = parsedOptionAndValue;
+                queryObject = this.parseQueryParam(optionAndValue, queryObject);
             }
 
         }
         return queryObject;
     }
 
-    parseQueryParam(jsonString, queryObject) {
+    parseQueryParam(optionAndValue, queryObject) {
         try {
-            if (this.validate(jsonString)) {
-                queryObject.query = (jsonString.option != '') ?
-                    this.parseOptionQuery(jsonString, queryObject.query) :
-                    queryObject.query = this.parseNoOptionQuery(jsonString, queryObject.query);
+            if (this.validate(optionAndValue)) {
+                queryObject.query = (optionAndValue.option != '') ?
+                    this.parseOptionQuery(optionAndValue, queryObject.query) :
+                    queryObject.query = this.parseNoOptionQuery(optionAndValue, queryObject.query);
             }
         } catch (err) {
             queryObject.hasError = true;
@@ -146,25 +146,25 @@ class QueryService {
                 case stringConstructor:
                     return {option: '', value: obj};
                 case arrayConstructor:
-                    return obj.map(this.parseOptionAndValue).reduce((a, b)=> {
-                        return a.concat(b);
+                    return obj.map(this.parseOptionAndValue).reduce((prev, next)=> {
+                        return prev.concat(next);
                     }, []);
                 case objectConstructor:
-                    let arrayList = [];
+                    let optionsAndValuesList = [];
                     for (let key of Object.keys(obj)) {
                         if (obj[key].constructor == stringConstructor) {
-                            arrayList.push({option: isNaN(key) ? key : '', value: obj[key]});
+                            optionsAndValuesList.push({option: isNaN(key) ? key : '', value: obj[key]});
                         } else if (obj[key].constructor == booleanConstructor) {
-                            arrayList.push({option: '', value: key});
+                            optionsAndValuesList.push({option: '', value: key});
                         } else {
-                            obj[key].map((jsonString)=> {
-                                let someObj = this.parseOptionAndValue(jsonString);
-                                someObj.option = key;
-                                arrayList.push(someObj);
+                            obj[key].map((res)=> {
+                                let optionAndValue = this.parseOptionAndValue(res);
+                                optionAndValue.option = key;
+                                optionsAndValuesList.push(optionAndValue);
                             });
                         }
                     }
-                    return arrayList;
+                    return optionsAndValuesList;
             }
         }
     }

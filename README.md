@@ -1,6 +1,6 @@
 # ORM using nodejs
 1. Go to the project folder and run: npm install
-2. Change the database connection string in index.js according to your mysql credentials
+2. Change the database config in config.js according to your mysql credentials
 3. Create employee table with fields id, name, designation, about_employee, created_at, updated_at, salary
 4. Run: npm start
 5. open the api in localhost:3000/employee

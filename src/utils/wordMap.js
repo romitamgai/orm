@@ -3,11 +3,11 @@
  */
 
 const wordMap = {
-    'eq': '=',
-    'gt': '>',
-    'lt': '<',
-    'gte': '>=',
-    'lte': '<='
+  'eq': '=',
+  'gt': '>',
+  'lt': '<',
+  'gte': '>=',
+  'lte': '<='
 };
 
 export default wordMap;
